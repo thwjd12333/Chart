@@ -1,0 +1,16 @@
+@charset "UTF-8";
+
+
+body {
+	
+	margin: 0;
+	font-family: '맑은 고딕',
+		'Apple SD Gothic Neo', 
+		sans-serif;
+}
+
+.chartAxis
+{
+	font-family: 'Montserrat', sans-serif;
+    font-size:10px;	
+}
