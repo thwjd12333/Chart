@@ -1,16 +1,80 @@
 @charset "UTF-8";
 
 
-body {
-	
+body {	
 	margin: 0;
 	font-family: '맑은 고딕',
 		'Apple SD Gothic Neo', 
 		sans-serif;
 }
+.axis {
+	font: 10px sans-serif;
+  }
 
-.chartAxis
-{
-	font-family: 'Montserrat', sans-serif;
-    font-size:10px;	
+  .axis path,
+  .axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+  }
+
+
+.bar {
+fill: #A8FF87;
 }
+
+.bar:hover {
+fill: #68B34D ;
+}
+
+.max_bar{
+	fill: #AB6DCF;
+}
+
+.min_bar{
+	fill: #D89EFA;
+}
+
+
+.d3-tip {
+line-height: 1;
+font-weight: bold;
+padding: 12px;
+background: rgba(0, 0, 0, 0.5);
+color: #fff;
+border-radius: 5px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+box-sizing: border-box;
+display: inline;
+font-size: 10px;
+width: 100%;
+line-height: 1;
+color: rgba(0, 0, 0, 0.8);
+content: "\25BC";
+position: absolute;
+text-align: center;
+}
+
+.d3-tip.n:after {
+margin: -1px 0 0 0;
+top: 100%;
+left: 0;
+}
+
+.dot{
+	fill : #6D6FAD;
+}
+
+.value_text {
+    fill: black;
+    font-weight:bold;
+}
+
+.grid line {
+	stroke: lightgrey;
+	stroke-opacity: 0.7;
+	shape-rendering: crispEdges;
+  }

@@ -2,96 +2,159 @@
 <meta charset="utf-8">
 
 <head>
-	<style>
-
-	.axis {
-	  font: 10px sans-serif;
-	}
-
-	.axis path,
-	.axis line {
-	  fill: none;
-	  stroke: #000;
-	  shape-rendering: crispEdges;
-	}
-
-	</style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+  <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
 
-<script>
+  <script>
 
-var margin = {top: 20, right: 20, bottom: 70, left: 40},
-    width = 600 - margin.left - margin.right,
-    height = 300 - margin.top - margin.bottom;
+    //각 여백의 축 ex) right > left  -> |0   |   left > right |   0|
+    const margin = { top: 100, right: 20, bottom: 30, left: 40 },
+      width = 800 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
 
-// Parse the date / time
+
+    //x,y축이 출력될 크기
+    const x = d3.scale.ordinal()
+      .rangeRoundBands([0, width], .1);
+    const y = d3.scale.linear()
+      .range([height, 0]);
+
+    //x,y축 속성
+    const xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom");  //눈금 방향
+
+    const yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left")
+      .ticks(10)
+      .tickSize(-width);
+    //////////////////////////////////////
 
 
-var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    //d3내 팁기능 설정  //마우스를 위에 올릴 때 Value값 출력
+    const tip = d3.tip()
+      .attr('class', 'd3-tip')
+      .offset([-10, 0])
+      .html(function (d) {
+        return "<strong>Value:</strong> <span style='color:#A8FF87'>" + d.value + "</span>";
+      })
 
-var y = d3.scale.linear().range([height, 0]);
+    //svg 속성 적용
+    const svg = d3.select("body")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
 
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
+    svg.call(tip);
 
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10);
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", 
-          "translate(" + margin.left + "," + margin.top + ")");
+    //csv의 데이터를 가져와서 값을 넣어줌
+    d3.csv("bar-data.csv", (error, data) => {
+      draw(data);
+    });
 
-d3.csv("bar-data.csv", function(error, data) {
-
-    data.forEach(function(d) {
+    const draw = data => {
+      //data내 정보들을 만큼 반복하며 값을 넣어줌
+      data.forEach(d => {
         d.id = d.id;
         d.value = +d.value;
-    });
-	
-  x.domain(data.map(function(d) { return d.id; }));
-  y.domain([0, d3.max(data, function(d) { return d.value; })]);
+      });
 
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-    .selectAll("text")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", "-.55em")
-      .attr("transform", "rotate(-90)" );
+      //x축과 y축의 범위
+      //x축은 data에 들어있는 id정보 값에 따라 출력
+      //y축은 0부터 데이터 내 가장 큰 value값을 기준으로 출력
+      x.domain(data.map(d => { return d.id; }));
+      y.domain([0, d3.max(data, d => { return d.value; })]);
 
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Value ($)");
+      //x축 그리기
+      svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "1em")         //id 출력값 위치
 
-  svg.selectAll("bar")
-      .data(data)
-    .enter().append("rect")
-      .style("fill", "steelblue")
-      .attr("x", function(d) { return x(d.id); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); });
+      //y축 그리기
+      svg.append("g")
+        .attr("class", "y axis grid")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "translate(50)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Value");
 
-});
 
-</script>
+      //막대그래프 그리기
+      svg.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
+        .attr("x", d => { return x(d.id); })
+        .attr("width", x.rangeBand())
+
+        // 처음 시작시 애니메이션
+        .attr("y", function (d) { return height - 1 })
+        .style("height", "0px")  //막대 그래프가 x축을 덮는것을 막기위해 -1
+
+        .transition()
+        .delay(function (d, i) {
+          return i * 500;
+        })
+        .duration(2500)
+
+        .attr("y", function (d) { return y(d.value); })
+        .style("height", d => { return height - y(d.value) - 1; })
+        /////////
+
+        .attr("class", d => {             //최대값 최소값의 색상 변경용
+          if (d3.max(data, d => { return d.value; }) == d.value) {
+            return "max_bar";
+          }
+          else if (d3.min(data, d => { return d.value; }) == d.value) {
+            return "min_bar";
+          }
+          else {
+            return "bar";
+          }
+        });
+
+
+      const line = d3.svg.line()
+        .x(d => { return x(d.id) + x.rangeBand() / 2; }) //라인 차트의 위치를 바의 중앙으로 맞추기 위해 x.rangeBand()/2 사용 
+        .y(d => { return y(d.value); })
+
+      //데이터선
+      svg.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "#A1A3FF")
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-width", 1.5)
+        .attr("d", line);
+
+      //데이터선 가운데 점
+      svg.selectAll("dot")
+        .data(data)
+        .enter().append("circle")
+        .attr("class", "dot")
+        .attr("r", 3)
+        .attr("cx", d => { return x(d.id) + x.rangeBand() / 2; })
+        .attr("cy", d => { return y(d.value); })
+    }    
+  </script>
 
 </body>
